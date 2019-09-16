@@ -5,7 +5,7 @@ import time
 from threading import Thread
 import sys
 
-def record():
+def record(fps=60):
     ###############################################################
     # Pick Region of interest
     ###############################################################
@@ -32,9 +32,12 @@ def record():
     thickness = 1
     rectangle_bgr = (240, 240, 240)
     ###############################################################
-
-    out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (monitor['width'],monitor['height']))
-    video = False
+    print( (monitor['width'],monitor['height']))
+    # fourcc = cv2.VideoWriter_fourcc(*'XVID')#'MJPG')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter()
+    out = cv2.VideoWriter("./{}.avi".format( time.strftime("%Y-%m-%d %H-%M-%S", time.gmtime(time.time())) ) ,fourcc, fps, (monitor['width'],monitor['height']))
+    video = True
     im_index = 1
     record = True
     webcam = False
@@ -43,10 +46,12 @@ def record():
     sct = mss.mss()
     cap = cv2.VideoCapture(0)
     while(record):
+        print(1/(time.time()-last_time))
+        last_time = time.time()
         if not pause:
             screen = np.array(sct.grab(monitor))
             fps = round(1/(time.time()-last_time))
-            print('fps: {}'.format(fps))
+            # print('fps: {}'.format(fps))
             last_time = time.time()
             if webcam:
                 _, cam_frame = cap.read()
@@ -56,7 +61,7 @@ def record():
                     webcam = False
                     print("No webcam feed")
             if video:
-                out.write(screen)
+                out.write(screen[:,:,0:3])
             else:
                 cv2.imwrite(f"./images/{im_index}.jpg", screen);
                 im_index+=1
@@ -72,13 +77,17 @@ def record():
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 record = False
+                out.release()
             elif key == ord('p'):
                 pause = not pause
             elif key == ord('w'):
                 webcam = not webcam
-
+            elif key == ord('v'):
+                video = not video
 
 
 if __name__ == "__main__":
-    record()
+    fps = int(sys.argv[1])
+    record(fps)
+
     cv2.destroyAllWindows()
