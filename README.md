@@ -2,6 +2,6 @@
 
 No Gui, no buttons.
 
-Intuitive easy script, just runs python screen_recorder.py.
+Intuitive and easy script runs python screen_recorder.py.
 
 *No audio recording*
